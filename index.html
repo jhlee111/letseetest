@@ -1,53 +1,53 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Letsee WebApp: Simple 3D Object #1</title>
+    <meta charset="UTF-8">
+    <title>Letsee WebApp: Simple 3D Object #1</title>
 
-  <!-- THREE.js -->
-  <script src="https://unpkg.com/three@0.121.1/build/three.min.js"></script>
-  <!-- Letsee WebAR SDK -->
-  <script src="https://developer.letsee.io/api/webar?key=aa440371e1ae6b53b3ea6fa9e963723447c3308967170f4b3bc0df0d5ea370be"></script>
+    <!-- THREE.js -->
+    <script src="https://unpkg.com/three@0.121.1/build/three.min.js"></script>
+    <!-- Letsee WebAR SDK -->
+    <script src="https://developer.letsee.io/api/webar?key=aa440371e1ae6b53b3ea6fa9e963723447c3308967170f4b3bc0df0d5ea370be"></script>
 
 </head>
 <body>
 <script>
-  let scene;
-  let renderer;
-  let entity;
+    let scene;
+    let renderer;
+    let entity;
 
-  letsee.ready(() => {
-    letsee.start();
-    letsee.addTHREE(THREE).then(obj => {
-      renderer = obj.renderer;
-      scene = obj.scene;
-      letsee.addTarget('https://developer.letsee.io/api-tm/target-manager/target-uid/62b36efdfd78dea3a5cf4f8b')
-              .then(_entity => {
-                entity = _entity;
+    letsee.ready(() => {
+        letsee.start(); 
+        letsee.addTHREE(THREE).then(obj => {
+            renderer = obj.renderer;
+            scene = obj.scene;
+            letsee.addTarget('https://developer.letsee.io/api-tm/target-manager/target-uid/62b375dad5259dc1bd303ac9')
+                .then(_entity => {
+                    entity = _entity;
 
-                const geometry = new THREE.BoxGeometry();
-                const material = new THREE.MeshBasicMaterial( { color: 0x00ff00 } );
-                const cube = new THREE.Mesh( geometry, material );
-                cube.scale.set(30, 30, 30);
-                cube.position.z = 30;
-                entity.add(cube);
+                    const geometry = new THREE.BoxGeometry();
+                    const material = new THREE.MeshBasicMaterial( { color: 0x00ff00 } );
+                    const cube = new THREE.Mesh( geometry, material );
+                    cube.scale.set(30, 30, 30);
+                    cube.position.z = 30;
+                    entity.add(cube);
 
-                scene.add(entity);
+                    scene.add(entity);
 
-                const animate = async function() {
-                  requestAnimationFrame(animate);
+                    const animate = async function() {
+                        requestAnimationFrame(animate);
 
-                  const camera = letsee.threeRenderer().getDeviceCamera();
-                  renderer.render(scene, camera);
+                        const camera = letsee.threeRenderer().getDeviceCamera();
+                        renderer.render(scene, camera);
 
-                  await letsee.threeRenderer().update();
-                };
-                animate();
-              });
+                        await letsee.threeRenderer().update();
+                    };
+                    animate();
+                });
+        });
+
     });
-
-  });
-  letsee.init({trackerType: 'image'});
+    letsee.init({trackerType: 'image'});
 </script>
 </body>
 </html>
