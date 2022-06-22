@@ -2,52 +2,48 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Letsee WebApp: Simple 3D Object #1</title>
-
-    <!-- THREE.js -->
+    <title>Simple Example</title>
     <script src="https://unpkg.com/three@0.121.1/build/three.min.js"></script>
-    <!-- Letsee WebAR SDK -->
-    <script src="https://developer.letsee.io/api/webar?key=aa440371e1ae6b53b3ea6fa9e963723447c3308967170f4b3bc0df0d5ea370be"></script>
 
+    <script src="https://developer.letsee.io/api/webar?key=aa440371e1ae6b53b3ea6fa9e963723447c3308967170f4b3bc0df0d5ea370be"></script>
 </head>
 <body>
 <script>
-    let scene;
-    let renderer;
-    let entity;
-
     letsee.ready(() => {
-        letsee.start(); 
-        letsee.addTHREE(THREE).then(obj => {
-            renderer = obj.renderer;
-            scene = obj.scene;
-            letsee.addTarget('https://developer.letsee.io/api-tm/target-manager/target-uid/62b375dad5259dc1bd303ac9')
-                .then(_entity => {
-                    entity = _entity;
+        letsee.start();
+        /* TARGET URI 이용한 이미지 타겟 등록 */
+        letsee.addTarget('https://developer.letsee.io/api-tm/target-manager/target-uid/62b375dad5259dc1bd303ac9')
+            .then(entity => {
+                /* 증강 대상 DomElement 생성 */
+                let dom = document.createElement('div');
+                dom.id = 'container';
+                dom.style.textAlign = 'center';
 
-                    const geometry = new THREE.BoxGeometry();
-                    const material = new THREE.MeshBasicMaterial( { color: 0x00ff00 } );
-                    const cube = new THREE.Mesh( geometry, material );
-                    cube.scale.set(30, 30, 30);
-                    cube.position.z = 30;
-                    entity.add(cube);
+                let myVid = document.createElement('video');
+                myVid.id = 'myVid';
+                myVid.style.width = '20%';
+                myVid.style.height = '20%';
+                myVid.src = 'assets/lpArtest.mp4';
+                myVid.playsinline = true;
+                myVid.loop = true;
+                myVid.style.zIndex = '300';
+                myVid.style.opacity = 0.5;
 
-                    scene.add(entity);
-
-                    const animate = async function() {
-                        requestAnimationFrame(animate);
-
-                        const camera = letsee.threeRenderer().getDeviceCamera();
-                        renderer.render(scene, camera);
-
-                        await letsee.threeRenderer().update();
-                    };
-                    animate();
-                });
-        });
-
+                dom.appendChild(myVid);
+                /* XRElement 생성 */
+                let xrElement = letsee.createXRElement(dom);
+                /* XRElement 의 entity 바인딩 */
+                letsee.bindXRElement(xrElement, entity);
+            });
     });
-    letsee.init({trackerType: 'image'});
+    letsee.init({trackerType:'image'});
+    letsee.onTrackStart(() => {
+        myVid.play().then(() => console.log('playing')).catch(err => console.error(err));
+    });
+    letsee.onTrackEnd(() => {
+        myVid.pause();
+    });
 </script>
 </body>
 </html>
+```
