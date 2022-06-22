@@ -1,29 +1,80 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="favicon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Movie Seat Booking</title>
-  </head>
-  <body>
-  <div class="movie-container">
-    <lable>Pick a movie:</lable>
-    <select name="" id="movie">
-      <option value="10">Avengers: Endgame ($10)</option>
-      <option value="12">Joker ($12)</option>
-      <option value="8">Toy Story 4 ($8)</option>
-      <option value="9">The Lion King ($9)</option>
-    </select>
-    <ul>
-      <li><div class="seat"></div>
-      <small></small></li>
-      <li>
-        <div class="seat occupied"></div>
-        <small>Occupied</small>
-      </li>
-    </ul>
-  </div>
-    <script type="module" src="/main.js"></script>
-  </body>
+<head>
+  <meta charset="UTF-8">
+  <title>Letsee WebApp: Loading FBX model</title>
+
+  <!-- THREE.js -->
+  <script src="https://unpkg.com/three/build/three.min.js"></script>
+  <!-- FBXLoader -->
+  <script src="https://unpkg.com/three/examples/js/loaders/FBXLoader.js"></script>
+  <script src="https://unpkg.com/three/examples/js/libs/inflate.min.js"></script>
+  <!-- Letsee WebAR SDK -->
+  <script src="https://developer.letsee.io/api/webar?key=aa440371e1ae6b53b3ea6fa9e963723447c3308967170f4b3bc0df0d5ea370be"></script>
+
+</head>
+<body>
+<script>
+  let scene;
+  let renderer;
+  let entity;
+  let clock = new THREE.Clock();
+  let light, mesh, mixer;
+  const loader = new THREE.FBXLoader();
+
+  letsee.ready(() => {
+    letsee.start();
+    letsee.addTHREE(THREE).then(obj => {
+      create3DWorld(obj);
+    })
+  });
+  letsee.init();
+
+  const create3DWorld = (obj) => {
+    renderer = obj.renderer;
+    scene = obj.scene;
+
+    light = new THREE.DirectionalLight(0xffffff);
+    light.position.set(0, -95, 120);
+    scene.add(light);
+
+    letsee.addTarget('[YOUR_TARGET_URI]').then(_entity => {
+      entity = _entity;
+
+      loader.load('[YOUR_FBX_MODEL_URI]', function (object) {
+        mesh = object;
+
+        mesh.position.set(0, -95, 50);
+        mesh.visible = true;
+        mesh.scale.setScalar(1);
+
+        // Create custom animation clips
+        if (mesh.animations.length > 0) {
+          mixer = new THREE.AnimationMixer(mesh);
+          const action = mixer.clipAction(mesh.animations[0]);
+          action.play();
+        } else console.error(`Model [${mesh.name}] does not have animation.`);
+
+        entity.add(mesh);
+
+        // Add entity to scene
+        scene.add(entity);
+
+        // Render all
+        const animate = async function () {
+          requestAnimationFrame(animate);
+          if (mixer) {
+            let delta = clock.getDelta();
+            mixer.update(delta);
+          }
+          await letsee.threeRenderer().update(); // Engine mainLoop 수행
+          const camera = letsee.threeRenderer().getDeviceCamera(); // 매 프레임마다 카메라 얻어옴.
+          renderer.render(scene, camera); // Three.js 화면 갱신
+        };
+        animate();
+      });
+    });
+  }
+</script>
+</body>
 </html>
