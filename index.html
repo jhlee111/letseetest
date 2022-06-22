@@ -1,23 +1,51 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Simple Example</title>
+  <title>Letsee WebApp: Simple 3D Object #1</title>
+
+  <!-- THREE.js -->
+  <script src="https://unpkg.com/three@0.121.1/build/three.min.js"></script>
+  <!-- Letsee WebAR SDK -->
   <script src="https://developer.letsee.io/api/webar?key=aa440371e1ae6b53b3ea6fa9e963723447c3308967170f4b3bc0df0d5ea370be"></script>
+
 </head>
 <body>
-<div id="container">
-  Hello, world!
-</div>
 <script>
+  let scene;
+  let renderer;
+  let entity;
+
   letsee.ready(() => {
     letsee.start();
-    letsee.addTarget('https://developer.letsee.io/api-tm/target-manager/target-uid/62b355a1fd78dea3a5cf4f89')
-            .then(entity => {
-              let xrElement = letsee.createXRElement(document.getElementById('container'));
-              letsee.bindXRElement(xrElement, entity);
-            });
+    letsee.addTHREE(THREE).then(obj => {
+      renderer = obj.renderer;
+      scene = obj.scene;
+      letsee.addTarget('https://developer.letsee.io/api-tm/target-manager/target-uid/62b36efdfd78dea3a5cf4f8b')
+              .then(_entity => {
+                entity = _entity;
+
+                const geometry = new THREE.BoxGeometry();
+                const material = new THREE.MeshBasicMaterial( { color: 0x00ff00 } );
+                const cube = new THREE.Mesh( geometry, material );
+                cube.scale.set(30, 30, 30);
+                cube.position.z = 30;
+                entity.add(cube);
+
+                scene.add(entity);
+
+                const animate = async function() {
+                  requestAnimationFrame(animate);
+
+                  const camera = letsee.threeRenderer().getDeviceCamera();
+                  renderer.render(scene, camera);
+
+                  await letsee.threeRenderer().update();
+                };
+                animate();
+              });
+    });
+
   });
   letsee.init({trackerType: 'image'});
 </script>
